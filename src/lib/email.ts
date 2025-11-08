@@ -80,20 +80,20 @@ Submitted at: ${new Date().toLocaleString()}`;
         const response = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${supabaseAnonKey}`,
+           'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             to: ADMIN_EMAILS,
             from: FROM_EMAIL,
             subject: subject,
             body: emailBody,
-            submitterName: submitterName,
-            submitterEmail: submitterEmail,
-            submitterMobile: submitterMobile,
-            message: message,
-          }),
-        });
+            submitterName,
+            submitterEmail,
+            submitterMobile,
+            message,
+         }),
+       });
+
 
         const result = await response.json();
         if (response.ok && result.success) {

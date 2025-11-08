@@ -1,4 +1,4 @@
-project_id = "kilunonkqudnjmbwwgby"
+project_id = "wtgjieqirjpfyfjlsitp"
 
-[functions.generate-career-suggestions]
-verify_jwt = true
+[functions.send-email]
+verify_jwt = false
