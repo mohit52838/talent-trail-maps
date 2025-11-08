@@ -514,44 +514,44 @@ const Admin = () => {
                   <p>No contact submissions yet</p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <Table>
+                <div className="w-full overflow-hidden">
+                  <Table className="w-full table-fixed">
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Mobile</TableHead>
-                        <TableHead>Message</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead className="w-[160px]">Name</TableHead>
+                        <TableHead className="w-[220px]">Email</TableHead>
+                        <TableHead className="w-[120px]">Mobile</TableHead>
+                        <TableHead className="w-[360px]">Message</TableHead>
+                        <TableHead className="w-[80px]">Status</TableHead>
+                        <TableHead className="w-[180px]">Date</TableHead>
+                        <TableHead className="text-right w-[180px]">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {submissions.map((submission) => (
                         <TableRow key={submission.id}>
-                          <TableCell className="font-medium">
-                            <div className="flex items-center gap-2">
-                              <User className="w-4 h-4 text-muted-foreground" />
-                              {submission.name}
+                          <TableCell className="font-medium max-w-[160px]">
+                            <div className="flex items-center gap-2 truncate">
+                              <User className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                              <span className="truncate">{submission.name}</span>
                             </div>
                           </TableCell>
-                          <TableCell>{submission.email}</TableCell>
-                          <TableCell>{submission.mobile || 'N/A'}</TableCell>
-                          <TableCell className="max-w-md">
+                          <TableCell className="max-w-[220px] truncate">{submission.email}</TableCell>
+                          <TableCell className="max-w-[120px] truncate">{submission.mobile || 'N/A'}</TableCell>
+                          <TableCell className="max-w-[360px]">
                             <div className="truncate" title={submission.message}>
                               {submission.message}
                             </div>
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="max-w-[80px]">
                             <Badge variant={submission.status === 'new' ? 'default' : 'secondary'}>
                               {submission.status}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-muted-foreground">
+                          <TableCell className="text-muted-foreground max-w-[180px] truncate">
                             {new Date(submission.created_at).toLocaleString()}
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="text-right whitespace-nowrap">
                             <div className="flex items-center justify-end gap-2">
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
