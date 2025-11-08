@@ -1,0 +1,486 @@
+export type GradeLevel = "10th" | "12th";
+
+export type JourneyData = {
+  grade?: GradeLevel;
+  category?: string;
+  personalityType?: string;
+  testAnswers?: Record<number, string>;
+  successCriteria?: Record<string, number>;
+  lastCareerId?: string;
+};
+
+const STORAGE_KEY = "journeyData";
+
+export const loadJourneyData = (): JourneyData => {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return {};
+    return JSON.parse(raw) as JourneyData;
+  } catch (error) {
+    console.warn("Failed to parse journey data", error);
+    return {};
+  }
+};
+
+export const updateJourneyData = (updates: Partial<JourneyData>) => {
+  if (typeof window === "undefined") return updates as JourneyData;
+  const current = loadJourneyData();
+  const next = { ...current, ...updates } satisfies JourneyData;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  return next;
+};
+
+export const clearJourneyData = () => {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(STORAGE_KEY);
+};
+
+export type PersonalityOption = {
+  value: string;
+  text: string;
+  trait: "E" | "I" | "S" | "N" | "T" | "F" | "J" | "P";
+};
+
+export type PersonalityQuestion = {
+  question: string;
+  options: PersonalityOption[];
+};
+
+export const PERSONALITY_QUESTIONS: PersonalityQuestion[] = [
+  {
+    question: "When working on a project, do you prefer to:",
+    options: [
+      { value: "plan", text: "Plan everything in detail before starting", trait: "J" },
+      { value: "adapt", text: "Start and adapt as you go", trait: "P" },
+    ],
+  },
+  {
+    question: "In social situations, you typically:",
+    options: [
+      { value: "energized", text: "Feel energized by being around people", trait: "E" },
+      { value: "drained", text: "Need time alone to recharge", trait: "I" },
+    ],
+  },
+  {
+    question: "When making decisions, you rely more on:",
+    options: [
+      { value: "logic", text: "Logic and objective analysis", trait: "T" },
+      { value: "feelings", text: "Personal values and feelings", trait: "F" },
+    ],
+  },
+  {
+    question: "You prefer to focus on:",
+    options: [
+      { value: "present", text: "Present realities and concrete information", trait: "S" },
+      { value: "future", text: "Future possibilities and abstract concepts", trait: "N" },
+    ],
+  },
+];
+
+const optionTraitMap = PERSONALITY_QUESTIONS.reduce<Record<string, PersonalityOption["trait"]>>(
+  (acc, question) => {
+    question.options.forEach((option) => {
+      acc[option.value] = option.trait;
+    });
+    return acc;
+  },
+  {}
+);
+
+export const computePersonalityType = (answers: Record<number, string>) => {
+  const traits = PERSONALITY_QUESTIONS.map((_, index) => {
+    const answer = answers[index];
+    return answer ? optionTraitMap[answer] : undefined;
+  });
+
+  const hasTrait = (trait: PersonalityOption["trait"]) => traits.includes(trait);
+
+  return `${hasTrait("E") ? "E" : "I"}${hasTrait("S") ? "S" : "N"}${hasTrait("T") ? "T" : "F"}${hasTrait("J") ? "J" : "P"}`;
+};
+
+export type CareerRoadmapStage = {
+  stage: number;
+  title: string;
+  description: string;
+  duration: string;
+  level: "Beginner" | "Intermediate" | "Advanced";
+  platform: string;
+  courseUrl: string;
+};
+
+export interface CareerSummary {
+  id: string;
+  name: string;
+  description: string;
+  salaryRange: string;
+  jobProspects: string;
+  growthOutlook?: "High" | "Medium" | "Emerging";
+  industries?: string[];
+  skills: string[];
+  roadmap: CareerRoadmapStage[];
+}
+
+export interface CareerCategory {
+  id: string;
+  label: string;
+  tagline: string;
+  careers: CareerSummary[];
+}
+
+export const CAREER_CATEGORIES: CareerCategory[] = [
+  {
+    id: "tech",
+    label: "Technology & IT",
+    tagline: "Software development, data science, cybersecurity, AI/ML, and more.",
+    careers: [
+      {
+        id: "software-engineer",
+        name: "Software Engineer",
+        description: "Design, build, and optimize applications that power businesses and consumer experiences.",
+        salaryRange: "₹8L – ₹18L per annum",
+        jobProspects: "High demand across startups, Big Tech, and product companies.",
+        growthOutlook: "High",
+        industries: ["Technology", "Finance", "Healthcare"],
+        skills: ["JavaScript", "System Design", "APIs", "Cloud", "Problem Solving"],
+        roadmap: [
+          {
+            stage: 1,
+            title: "Programming Foundations",
+            description: "Master core programming, data structures, and version control.",
+            duration: "8 weeks",
+            level: "Beginner",
+            platform: "Coursera",
+            courseUrl: "https://www.coursera.org/specializations/coding-for-everyone",
+          },
+          {
+            stage: 2,
+            title: "Backend & Frontend Skills",
+            description: "Build full-stack applications with modern frameworks and databases.",
+            duration: "10 weeks",
+            level: "Intermediate",
+            platform: "Udemy",
+            courseUrl: "https://www.udemy.com/course/the-complete-nodejs-developer-course-2/",
+          },
+          {
+            stage: 3,
+            title: "Projects & Interview Prep",
+            description: "Create portfolio projects and prepare for technical interviews.",
+            duration: "6 weeks",
+            level: "Advanced",
+            platform: "InterviewBit",
+            courseUrl: "https://www.interviewbit.com/practice/",
+          },
+        ],
+      },
+      {
+        id: "data-scientist",
+        name: "Data Scientist",
+        description: "Use statistics, programming, and machine learning to derive insights from data.",
+        salaryRange: "₹9L – ₹20L per annum",
+        jobProspects: "Finance, e-commerce, healthcare, and SaaS companies hire aggressively.",
+        growthOutlook: "High",
+        industries: ["Analytics", "FinTech", "HealthTech"],
+        skills: ["Python", "SQL", "Machine Learning", "Data Visualization"],
+        roadmap: [
+          {
+            stage: 1,
+            title: "Statistics & Programming",
+            description: "Learn Python, statistics, and exploratory data analysis.",
+            duration: "6 weeks",
+            level: "Beginner",
+            platform: "edX",
+            courseUrl: "https://www.edx.org/course/data-science-essentials",
+          },
+          {
+            stage: 2,
+            title: "Machine Learning Projects",
+            description: "Build ML models, tune hyperparameters, and deploy notebooks.",
+            duration: "8 weeks",
+            level: "Intermediate",
+            platform: "Coursera",
+            courseUrl: "https://www.coursera.org/learn/machine-learning",
+          },
+          {
+            stage: 3,
+            title: "Domain Specialization",
+            description: "Choose analytics, NLP, or computer vision projects for portfolio.",
+            duration: "6 weeks",
+            level: "Advanced",
+            platform: "Kaggle",
+            courseUrl: "https://www.kaggle.com/learn",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: "business",
+    label: "Business & Finance",
+    tagline: "Management consulting, marketing, entrepreneurship, and financial analysis.",
+    careers: [
+      {
+        id: "marketing-manager",
+        name: "Marketing Manager",
+        description: "Lead brand strategy, campaigns, and growth initiatives across channels.",
+        salaryRange: "₹7L – ₹16L per annum",
+        jobProspects: "High demand in FMCG, consumer tech, and D2C startups.",
+        growthOutlook: "High",
+        industries: ["Consumer Goods", "E-commerce", "Agency"],
+        skills: ["Digital Marketing", "Analytics", "Storytelling", "SEO"],
+        roadmap: [
+          {
+            stage: 1,
+            title: "Marketing Fundamentals",
+            description: "Understand consumer behavior, positioning, and brand strategy.",
+            duration: "6 weeks",
+            level: "Beginner",
+            platform: "HubSpot Academy",
+            courseUrl: "https://academy.hubspot.com/",
+          },
+          {
+            stage: 2,
+            title: "Growth & Performance",
+            description: "Run paid campaigns, interpret analytics, and iterate creatives.",
+            duration: "8 weeks",
+            level: "Intermediate",
+            platform: "Google Skillshop",
+            courseUrl: "https://skillshop.exceedlms.com/student/catalog",
+          },
+          {
+            stage: 3,
+            title: "Leadership & Strategy",
+            description: "Plan go-to-market launches and manage cross-functional teams.",
+            duration: "5 weeks",
+            level: "Advanced",
+            platform: "Coursera",
+            courseUrl: "https://www.coursera.org/specializations/marketing",
+          },
+        ],
+      },
+      {
+        id: "financial-analyst",
+        name: "Financial Analyst",
+        description: "Analyze financial data, build models, and guide investment decisions.",
+        salaryRange: "₹6L – ₹14L per annum",
+        jobProspects: "Banks, NBFCs, venture funds, and corporate finance teams.",
+        growthOutlook: "Medium",
+        industries: ["Banking", "Consulting", "FinTech"],
+        skills: ["Excel", "Financial Modeling", "Valuation", "Reporting"],
+        roadmap: [
+          {
+            stage: 1,
+            title: "Accounting & Excel",
+            description: "Master accounting basics and spreadsheet best practices.",
+            duration: "5 weeks",
+            level: "Beginner",
+            platform: "Coursera",
+            courseUrl: "https://www.coursera.org/learn/financial-accounting",
+          },
+          {
+            stage: 2,
+            title: "Financial Modeling",
+            description: "Build cash-flow models, valuations, and dashboards.",
+            duration: "7 weeks",
+            level: "Intermediate",
+            platform: "CFI",
+            courseUrl: "https://courses.corporatefinanceinstitute.com/collections",
+          },
+          {
+            stage: 3,
+            title: "Investments & Analysis",
+            description: "Interpret market trends, risk, and returns for decision making.",
+            duration: "6 weeks",
+            level: "Advanced",
+            platform: "Udemy",
+            courseUrl: "https://www.udemy.com/course/cfa-level-1-complete-course/",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: "creative",
+    label: "Creative Arts",
+    tagline: "Design, animation, content creation, and storytelling careers.",
+    careers: [
+      {
+        id: "ux-designer",
+        name: "UX Designer",
+        description: "Craft intuitive digital experiences through research, wireframes, and prototypes.",
+        salaryRange: "₹6L – ₹15L per annum",
+        jobProspects: "Product startups, agencies, SaaS, and EdTech platforms.",
+        growthOutlook: "High",
+        industries: ["Product", "E-learning", "Consulting"],
+        skills: ["User Research", "Wireframing", "Figma", "Usability Testing"],
+        roadmap: [
+          {
+            stage: 1,
+            title: "Design Foundations",
+            description: "Learn design thinking, user research, and information architecture.",
+            duration: "6 weeks",
+            level: "Beginner",
+            platform: "Interaction Design Foundation",
+            courseUrl: "https://www.interaction-design.org/courses",
+          },
+          {
+            stage: 2,
+            title: "Prototyping & Tools",
+            description: "Master Figma, prototyping, and usability testing workflows.",
+            duration: "6 weeks",
+            level: "Intermediate",
+            platform: "Coursera",
+            courseUrl: "https://www.coursera.org/learn/user-interface-design",
+          },
+          {
+            stage: 3,
+            title: "Portfolio & Collaborations",
+            description: "Collaborate on real projects and present case studies effectively.",
+            duration: "4 weeks",
+            level: "Advanced",
+            platform: "ADPList",
+            courseUrl: "https://adplist.org/mentors",
+          },
+        ],
+      },
+      {
+        id: "digital-creator",
+        name: "Digital Content Creator",
+        description: "Build audiences through video, social media, and storytelling across platforms.",
+        salaryRange: "₹4L – ₹12L per annum",
+        jobProspects: "Brands, agencies, creator economy platforms, and freelancing.",
+        growthOutlook: "Emerging",
+        industries: ["Media", "Advertising", "Influencer Marketing"],
+        skills: ["Video Editing", "Copywriting", "Analytics", "Storytelling"],
+        roadmap: [
+          {
+            stage: 1,
+            title: "Content Strategy",
+            description: "Define niche, audience, and content pillars.",
+            duration: "4 weeks",
+            level: "Beginner",
+            platform: "Skillshare",
+            courseUrl: "https://www.skillshare.com/en/browse/content-marketing",
+          },
+          {
+            stage: 2,
+            title: "Production & Editing",
+            description: "Shoot videos, edit, and optimize for platforms like YouTube & Instagram.",
+            duration: "6 weeks",
+            level: "Intermediate",
+            platform: "YouTube Creator Academy",
+            courseUrl: "https://creatoracademy.youtube.com/page/home",
+          },
+          {
+            stage: 3,
+            title: "Monetization & Growth",
+            description: "Launch brand collaborations, merch, and community products.",
+            duration: "5 weeks",
+            level: "Advanced",
+            platform: "CreatorUp",
+            courseUrl: "https://creatorup.com/",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: "health",
+    label: "Healthcare & Science",
+    tagline: "Medicine, research, psychology, biotechnology, and allied health.",
+    careers: [
+      {
+        id: "biomedical-researcher",
+        name: "Biomedical Researcher",
+        description: "Investigate diseases, develop treatments, and advance medical innovations.",
+        salaryRange: "₹7L – ₹17L per annum",
+        jobProspects: "Hospitals, biotech labs, pharma, and public health institutes.",
+        growthOutlook: "High",
+        industries: ["Healthcare", "Pharma", "Biotech"],
+        skills: ["Lab Techniques", "Data Analysis", "Clinical Research", "Writing"],
+        roadmap: [
+          {
+            stage: 1,
+            title: "Science Foundations",
+            description: "Strengthen biology, chemistry, and lab safety protocols.",
+            duration: "8 weeks",
+            level: "Beginner",
+            platform: "NPTEL",
+            courseUrl: "https://nptel.ac.in/",
+          },
+          {
+            stage: 2,
+            title: "Research Methods",
+            description: "Learn experimental design, data logging, and statistical tools.",
+            duration: "8 weeks",
+            level: "Intermediate",
+            platform: "Coursera",
+            courseUrl: "https://www.coursera.org/learn/research-methods",
+          },
+          {
+            stage: 3,
+            title: "Publish & Collaborate",
+            description: "Work on lab projects, publish papers, and attend conferences.",
+            duration: "6 weeks",
+            level: "Advanced",
+            platform: "edX",
+            courseUrl: "https://www.edx.org/course/essential-human-biology",
+          },
+        ],
+      },
+      {
+        id: "clinical-psychologist",
+        name: "Clinical Psychologist",
+        description: "Support mental health through therapy, diagnostics, and counseling.",
+        salaryRange: "₹5L – ₹12L per annum",
+        jobProspects: "Hospitals, wellness startups, schools, and private practice.",
+        growthOutlook: "Emerging",
+        industries: ["Healthcare", "Education", "HR"],
+        skills: ["Counseling", "Empathy", "Diagnosis", "Therapy Techniques"],
+        roadmap: [
+          {
+            stage: 1,
+            title: "Psychology Fundamentals",
+            description: "Understand human behavior, cognition, and research ethics.",
+            duration: "6 weeks",
+            level: "Beginner",
+            platform: "Coursera",
+            courseUrl: "https://www.coursera.org/learn/introduction-psychology",
+          },
+          {
+            stage: 2,
+            title: "Clinical Practice",
+            description: "Learn therapeutic approaches, counseling, and case documentation.",
+            duration: "8 weeks",
+            level: "Intermediate",
+            platform: "FutureLearn",
+            courseUrl: "https://www.futurelearn.com/subjects/psychology-and-mental-health-courses",
+          },
+          {
+            stage: 3,
+            title: "Internships & Licensing",
+            description: "Gain supervised practice hours and prepare for licensing exams.",
+            duration: "12 weeks",
+            level: "Advanced",
+            platform: "APA",
+            courseUrl: "https://www.apa.org/ed/graduate/licensure",
+          },
+        ],
+      },
+    ],
+  },
+];
+
+export const findCategoryById = (id?: string) => CAREER_CATEGORIES.find((category) => category.id === id);
+
+export const findCareerById = (careerId: string) => {
+  for (const category of CAREER_CATEGORIES) {
+    const career = category.careers.find((c) => c.id === careerId);
+    if (career) {
+      return { career, category } as { career: CareerSummary; category: CareerCategory };
+    }
+  }
+  return null;
+};
+
+
