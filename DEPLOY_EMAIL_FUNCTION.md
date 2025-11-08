@@ -18,7 +18,7 @@
 Set the SendGrid API key in Supabase:
 
 ```bash
-supabase secrets set SENDGRID_API_KEY=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
+supabase secrets set SENDGRID_API_KEY=your_sendgrid_api_key_here
 ```
 
 Optional (if you want to override defaults):
