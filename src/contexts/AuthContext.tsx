@@ -56,6 +56,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { ok: true };
     }
 
+    // Admin - Mohit Patil
+    if (email === "anushka.talole03@gmail.com" && password === "Anu@1234") {
+      const adminUser: AppUser = {
+        id: "admin",
+        email,
+        name: name || "Admin",
+        isAdmin: true,
+        avatar: "/favicon.ico",
+      };
+      setUser(adminUser);
+      return { ok: true };
+    }
+
     //Admin - Krish Parmar
     if (email === "krishparmar116@gmail.com" && password === "Krish@1234") {
         const adminUser: AppUser = {
